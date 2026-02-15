@@ -1,4 +1,3 @@
-# CompleteAuthenticationLogic
 # Complete Authentication Backend
 
 ## Overview
@@ -244,3 +243,73 @@ This project demonstrates a production style authentication architecture includi
 * Modular backend structure
 
 It can be directly integrated into any MERN or frontend project requiring authentication.
+
+## Password Reset Flow (Forgot Password)
+
+This backend also implements a secure password recovery mechanism using a time‑limited reset token sent via email.
+
+### Step 1: Request Password Reset
+
+**Endpoint:** `POST /api/auth/forgot-password`
+
+User provides their registered email.
+
+Server actions:
+
+1. Finds the user by email
+2. Generates a secure random reset token
+3. Stores a hashed version of the token in database
+4. Sets expiry time (typically 1 hour)
+5. Sends reset email containing reset link with token
+
+Security notes:
+
+* Raw token is NEVER stored in DB
+* Only hashed token is saved
+* Prevents token leakage if DB is compromised
+
+---
+
+### Step 2: Reset Password
+
+**Endpoint:** `POST /api/auth/reset-password`
+
+Client sends:
+
+* token
+* new password
+
+Server verifies:
+
+1. Token exists
+2. Token not expired
+3. Token matches hashed DB value
+
+Then server:
+
+* Hashes new password using bcrypt
+* Updates user password
+* Deletes reset token fields
+* Sends success confirmation email
+
+---
+
+### Flow Diagram
+
+User → Forgot Password → Email Sent → Click Reset Link → Enter New Password → Password Updated
+
+---
+
+### Email Templates Used
+
+* Password Reset Request Email
+* Password Reset Success Confirmation
+
+---
+
+### Security Protections
+
+* Expiring reset tokens
+* Hashed tokens in DB
+* Single‑use tokens
+* No user enumeration (same response even if email not registered)
